@@ -27,7 +27,6 @@ namespace CoffeeRush
         public static void RaiseUpgradePurchased(UpgradeData data, int level) => UpgradePurchased?.Invoke(data, level);
         public static void RaiseDayFinished(DaySummary summary) => DayFinished?.Invoke(summary);
 
-        // Useful for play-mode tests / domain reloads.
         public static void ClearAll()
         {
             MoneyChanged = null; ReputationChanged = null; DayTimerChanged = null;

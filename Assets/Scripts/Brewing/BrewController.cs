@@ -1,9 +1,10 @@
+
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using TMPro;
 using UnityEngine;
-using UnityEngine.Serialization;
+using UnityEngine.UI;
 
 namespace CoffeeRush
 {
@@ -14,19 +15,32 @@ namespace CoffeeRush
         [SerializeField] private TMP_Text resultText;
         [SerializeField] private TMP_Text activeCustomerText;
         [SerializeField] private TMP_Text activeOrderText;
+        [SerializeField] private Button serveButton;
 
         private readonly List<IngredientType> selected =
             new List<IngredientType>();
 
         private OrderCardView selectedOrderCard;
         private bool isBrewing;
+        private bool isReadyToServe;
 
         public IReadOnlyList<IngredientType> SelectedIngredients => selected;
         public bool IsBrewing => isBrewing;
+        public bool IsReadyToServe => isReadyToServe;
+
+        private void Start()
+        {
+            UpdateIngredientsUI();
+            UpdateServeButton();
+
+            if (resultText != null)
+                resultText.text = string.Empty;
+        }
 
         public void SetSelectedOrder(OrderCardView card)
         {
-            if (isBrewing) return;
+            if (isBrewing || isReadyToServe)
+                return;
 
             selectedOrderCard = card;
 
@@ -39,11 +53,14 @@ namespace CoffeeRush
                 activeOrderText.text = card != null
                     ? card.RecipeName
                     : string.Empty;
+
+            UpdateServeButton();
         }
 
         public void SelectIngredient(IngredientType ingredient)
         {
-            if (isBrewing || gameManager == null ||
+            if (isBrewing || isReadyToServe ||
+                gameManager == null ||
                 gameManager.State != GameState.Playing)
                 return;
 
@@ -59,7 +76,9 @@ namespace CoffeeRush
 
         public void RemoveLastIngredient()
         {
-            if (isBrewing || selected.Count == 0) return;
+            if (isBrewing || isReadyToServe ||
+                selected.Count == 0)
+                return;
 
             selected.RemoveAt(selected.Count - 1);
             UpdateIngredientsUI();
@@ -67,7 +86,8 @@ namespace CoffeeRush
 
         public void ClearIngredients()
         {
-            if (isBrewing) return;
+            if (isBrewing || isReadyToServe)
+                return;
 
             selected.Clear();
             UpdateIngredientsUI();
@@ -75,18 +95,21 @@ namespace CoffeeRush
 
         public void BrewSelected()
         {
-            if (isBrewing || gameManager == null ||
+            if (isBrewing || isReadyToServe ||
+                gameManager == null ||
                 selectedOrderCard == null ||
                 string.IsNullOrEmpty(selectedOrderCard.OrderId) ||
                 selected.Count == 0)
                 return;
 
-            StartCoroutine(BrewRoutine(selectedOrderCard.OrderId));
+            StartCoroutine(BrewRoutine(
+                selectedOrderCard.OrderId));
         }
 
         private IEnumerator BrewRoutine(string orderId)
         {
             isBrewing = true;
+            UpdateServeButton();
 
             if (resultText != null)
                 resultText.text = "Готовим напиток...";
@@ -96,22 +119,59 @@ namespace CoffeeRush
 
             yield return new WaitForSeconds(duration);
 
-            gameManager.ServeOrder(orderId, selected.ToArray());
+            isBrewing = false;
+            isReadyToServe = true;
+
+            if (resultText != null)
+                resultText.text = "Напиток готов! Можно отдавать.";
+
+            UpdateServeButton();
+        }
+
+        public void ServePreparedOrder()
+        {
+            if (!isReadyToServe ||
+                gameManager == null ||
+                selectedOrderCard == null ||
+                string.IsNullOrEmpty(selectedOrderCard.OrderId))
+                return;
+
+            string orderId = selectedOrderCard.OrderId;
+
+            IngredientType[] ingredients = selected.ToArray();
+
+            gameManager.ServeOrder(orderId, ingredients);
 
             selected.Clear();
             selectedOrderCard = null;
+            isReadyToServe = false;
+
+            if (activeCustomerText != null)
+                activeCustomerText.text = "Заказ не выбран";
+
+            if (activeOrderText != null)
+                activeOrderText.text = string.Empty;
 
             UpdateIngredientsUI();
 
             if (resultText != null)
-                resultText.text = "Приготовление завершено!";
+                resultText.text = "Заказ передан!";
 
-            isBrewing = false;
+            UpdateServeButton();
+        }
+
+        private void UpdateServeButton()
+        {
+            if (serveButton == null)
+                return;
+
+            serveButton.interactable = isReadyToServe;
         }
 
         private void UpdateIngredientsUI()
         {
-            if (ingredientsText == null) return;
+            if (ingredientsText == null)
+                return;
 
             if (selected.Count == 0)
             {

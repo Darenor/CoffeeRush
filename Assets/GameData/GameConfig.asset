@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6d9224638f440114085d732823256569, type: 3}
   m_Name: GameConfig
   m_EditorClassIdentifier: 
-  dayDurationSeconds: 10
+  dayDurationSeconds: 180
   targetMoneyPerDay: 180
   startingReputation: 5
   maxReputation: 5
