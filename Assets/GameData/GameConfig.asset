@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d9224638f440114085d732823256569, type: 3}
+  m_Name: GameConfig
+  m_EditorClassIdentifier: 
+  dayDurationSeconds: 10
+  targetMoneyPerDay: 180
+  startingReputation: 5
+  maxReputation: 5
+  startingMoney: 120
+  baseMaxConcurrentOrders: 2
+  orderPatienceSeconds: 45
+  spawnIntervalSeconds: 8
+  wrongOrderReputationPenalty: 1
+  expiredOrderReputationPenalty: 1
+  correctOrderReputationBonus: 0
